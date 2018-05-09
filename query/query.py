@@ -15,7 +15,7 @@ class Query:
             }
         }
         if self._fields:
-            query['_source'] = fields
+            query['_source'] = self._fields
         if self._must:
             for must_filter in self._must:
                 query['query']['bool']['must'].append(must_filter.get())
