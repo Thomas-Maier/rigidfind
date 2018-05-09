@@ -43,6 +43,9 @@ class QueryFilter(Filter):
             }
         }
 
+    def get(self):
+        return self._get_match_query()
+
     
 class RangeFilter(Filter):
     def __init__(self, field, gte, lte, format = 'epoch_second', date_format = '%Y-%m-%dT%H:%M:%S'):
