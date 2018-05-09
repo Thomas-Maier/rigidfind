@@ -22,3 +22,5 @@ class Query:
         if self._must_not:
             for must_not_filter in self._must_not:
                 query['query']['bool']['must_not'].append(must_not_filter.get())
+
+        return query
