@@ -1,4 +1,6 @@
 
+import datetime
+
 class IndexFilter:
     def __init__(self, gte, lte, date_format):
         self._date_gte = datetime.datetime(**gte)
