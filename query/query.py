@@ -5,7 +5,7 @@ class Query:
         self._must = must
         self._must_not = must_not
 
-    def get():
+    def get(self):
         query = {
             'query': {
                 'bool': {
