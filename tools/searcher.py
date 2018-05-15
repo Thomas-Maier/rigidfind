@@ -2,17 +2,21 @@
 import json
 
 class Searcher:
-    def __init__(self, instance, query, index, output = 'output.json'):
+    def __init__(self, instance, query, index, output = 'output.json', parse_output = True):
         self._instance = instance
         self._query = query
         self._index = index
         self._output = output
+        self._parse_output = parse_output
 
     def search(self):
         result = self._instance.search(index = self._index, body = self._query, size = 1)
         output = {}
-        for agg_name, agg_data in result['aggregations'].items():
-            Searcher._parse(agg_name, agg_data, output)
+        if self._parse_output:
+            for agg_name, agg_data in result['aggregations'].items():
+                Searcher._parse(agg_name, agg_data, output)
+        else:
+            output = result
         with open(self._output, 'w') as out_file:
             json.dump(output, out_file)
 
