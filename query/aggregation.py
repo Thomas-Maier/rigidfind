@@ -1,4 +1,6 @@
 
+## Should also allow for 'scripts' entry instead of 'field'
+
 class Aggregation(object):
     def __init__(self):
         self.name = ''
@@ -48,5 +50,23 @@ class TermAggregation(Aggregation):
                 'order': {
                     '_term': self._order
                 }
+            }
+        }
+
+    
+class PercentileAggregation(Aggregation):
+    def __init__(self, field, percentiles = [50]):
+        super(PercentileAggregation, self).__init__()
+        self._field = field
+        self.name = field
+        self._percentiles = percentiles
+        self.payload = self._get_percentile_aggregation()
+
+    def _get_percentile_aggregation(self):
+        return {
+            'percentiles': {
+                'field': self._field,
+                'percents': self._percentiles,
+                'keyed': False
             }
         }
