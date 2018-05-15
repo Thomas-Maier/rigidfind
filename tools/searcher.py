@@ -38,7 +38,7 @@ class Searcher:
             if len(entry) > 2:
                 sub_agg_name = ''
                 for key in entry.keys():
-                    if key == 'doc_count' or key == 'key' or key = 'value': continue
+                    if key == 'doc_count' or key == 'key' or key == 'value': continue
                     sub_agg_name = key
                     break
                 Searcher._parse(sub_agg_name, entry[sub_agg_name], output[agg_name][agg_key])
