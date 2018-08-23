@@ -7,13 +7,13 @@ from sys import stdout
 from helper import Format
 
 class Looper:
-    def __init__(self, FileNames, Reader, OutputName = None, InputFormat = Format.h5, NodePath = None):
-        self._file_names = FileNames
-        self._input_format = InputFormat
+    def __init__(self, file_names, reader, output_name = None, input_format = Format.h5, node_path = None):
+        self._file_names = file_names
+        self._input_format = input_format
         ## This one defines how the input files are to be read
-        self._reader = Reader
-        if OutputName: self._reader.set_output_name(OutputName)
-        self._node_path = NodePath
+        self._reader = reader
+        if output_name: self._reader.set_output_name(output_name)
+        self._node_path = node_path
         if self._input_format == Format.h5 and self._node_path is None:
             print 'Input format is h5, but no node path is provided'
             raise Exception

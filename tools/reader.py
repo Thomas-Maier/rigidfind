@@ -11,10 +11,10 @@ class Mode(Enum):
 
 
 class Entry:
-    def __init__(self, Modifier = {}, Mapper = {}):
+    def __init__(self, entry_modifier = {}, entry_mapper = {}):
         self.entry = None
-        self._modifier = Modifier
-        self._mapper = Mapper
+        self._entry_modifier = entry_modifier
+        self._entry_mapper = entry_mapper
         self._cache = {}
 
     def __getitem__(self, key):
@@ -23,13 +23,13 @@ class Entry:
             return self._cache[key]
         ## Map input key to the one in the input file
         key_mapped = key
-        if key in self._mapper:
-            key_mapped = self._mapper[key]
+        if key in self._entry_mapper:
+            key_mapped = self._entry_mapper[key]
         value = self.entry[key_mapped]
         ## Modify value if a modifier for this key was set
-        if key in self._modifier:
+        if key in self._entry_modifier:
             try:
-                value = self._modifier[key](value)
+                value = self._entry_modifier[key](value)
             except:
                 print 'Could not properly apply modifier for key "{0}" and value "{1}"'.format(key, value)
                 raise
@@ -52,19 +52,19 @@ class Entry:
 
 
 class Reader:
-    def __init__(self, Template, OutputName = None, Modifier = {}, Filter = None, Mapper = {}, UseSet = False, Mode = Mode.aggregation):
-        self._mode = Mode
-        self._template = Template
+    def __init__(self, template, output_name = None, entry_modifier = {}, entry_filter = None, entry_mapper = {}, use_set = False, mode = Mode.aggregation):
+        self._mode = mode
+        self._template = template
         self._payload = {}
         if self._mode == Mode.skimming:
             self._payload = []
             self._output = None
-        self._modifier = Modifier
-        self._filter = Filter
-        self._mapper = Mapper
-        self._output_name = OutputName
+        self._entry_modifier = entry_modifier
+        self._entry_filter = entry_filter
+        self._entry_mapper = entry_mapper
+        self._output_name = output_name
         self._output_format = Format.pkl
-        self._use_set = UseSet
+        self._use_set = use_set
         if self._use_set:
             self._output_format = Format.pkl
 
@@ -113,12 +113,12 @@ class Reader:
         else:
             iter_obj = data
         ## Make entry object
-        entry = Entry(Modifier = self._modifier, Mapper = self._mapper)
+        entry = Entry(entry_modifier = self._entry_modifier, entry_mapper = self._entry_mapper)
         for input_entry in iter_obj:
             ## Load current entry data
             entry.load(input_entry)
             ## Filter entry
-            if self._filter is not None and not self._filter.keep(entry): continue
+            if self._entry_filter is not None and not self._entry_filter.keep(entry): continue
             ## Add data
             if self._mode == Mode.aggregation:
                 self._add_entry(self._payload, self._template, entry)
