@@ -11,27 +11,27 @@ except ImportError:
 
 
 class Scanner:
-    def __init__(self, Instance, Query = None, Index = None, IndexFilter = None, OutputFolder = None, EntryClass = None,
-                 TablePath = None, EntryMap = None, EntryDefault = None, EntryModifier = None, EntryFilter = None, EntryDigger = None,
-                 Debug = False):
-        self._debug_flag = Debug
-        self._instance = Instance
-        self._query = Query
-        self._indices = self.get_indices(Index, IndexFilter)
-        self._output_folder = OutputFolder
-        self._entry_default = EntryDefault
-        self._entry_modifier = EntryModifier
-        self._entry_filter = EntryFilter
-        self._entry_map = EntryMap
-        self._entry_digger = EntryDigger
+    def __init__(self, instance, query = None, index = None, index_filter = None, output_folder = None, entry_class = None,
+                 table_path = None, entry_map = None, entry_default = None, entry_modifier = None, entry_filter = None, entry_digger = None,
+                 debug = False):
+        self._debug_flag = debug
+        self._instance = instance
+        self._query = query
+        self._indices = self.get_indices(index, index_filter)
+        self._output_folder = output_folder
+        self._entry_default = entry_default
+        self._entry_modifier = entry_modifier
+        self._entry_filter = entry_filter
+        self._entry_map = entry_map
+        self._entry_digger = entry_digger
         ## H5 File
-        self._entry_class = EntryClass
+        self._entry_class = entry_class
         if self._entry_class is not None:
-            if TablePath is None:
+            if table_path is None:
                 print 'ERROR: Please specify a table path'
                 raise SystemExit
-            self._table_path = self._parse_table_path(TablePath)
-            self._columns_to_check = set([l for l in EntryClass.columns.keys() if EntryClass.columns[l].kind == 'string'])
+            self._table_path = self._parse_table_path(table_path)
+            self._columns_to_check = set([l for l in entry_class.columns.keys() if entry_class.columns[l].kind == 'string'])
         self._bar_mode = True
         try:
             from tqdm import tqdm
@@ -39,7 +39,7 @@ class Scanner:
             self._bar_mode = False
 
     def scan(self):
-        self._debug('Start scanning indices: {0}'.format(self._indices))
+        self._debug('Start scanning indices: {}'.format(self._indices))
         if self._entry_class is not None:
             self._scan_h5()
         else:
@@ -54,9 +54,9 @@ class Scanner:
             iter_tuple = enumerate(self._indices)
         for i, index in iter_tuple:
             if not self._bar_mode:
-                stdout.write('\r({0}/{1}) processing {2}'.format(i+1, len(self._indices), index))
+                stdout.write('\r({}/{}) processing {}'.format(i+1, len(self._indices), index))
                 stdout.flush()
-            h5file = tables.open_file('{0}/{1}.h5'.format(self._output_folder, index), mode = 'w', title = '{0}'.format(index), filters = filters)
+            h5file = tables.open_file('{}/{}.h5'.format(self._output_folder, index), mode = 'w', title = '{0}'.format(index), filters = filters)
             table = self._create_table(h5file)
             row = table.row
             ## Scan ES index with python helpers module
@@ -86,7 +86,7 @@ class Scanner:
             iter_tuple = enumerate(self._indices)
         for i, index in iter_tuple:
             if not self._bar_mode:
-                stdout.write('\r({0}/{1}) processing {2}'.format(i+1, len(self._indices), index))
+                stdout.write('\r({}/{}) processing {}'.format(i+1, len(self._indices), index))
                 stdout.flush()
             output = []
             ## Scan ES index with python helpers module
@@ -100,7 +100,7 @@ class Scanner:
                 if self._filter(source): continue
                 output.append(source)
             ## Write output
-            out_file = gzip.open('{0}/{1}.json.gz'.format(self._output_folder, index), 'w')
+            out_file = gzip.open('{}/{}.json.gz'.format(self._output_folder, index), 'w')
             json.dump(output, out_file)
             out_file.close()
         if not self._bar_mode:
@@ -143,7 +143,7 @@ class Scanner:
 
     def _check_entry(self, entry, col_name):
         if col_name in self._columns_to_check and len(entry) > self._entry_class.columns[col_name].itemsize:
-            print 'WARNING: entry "{0}" for column "{1}" is too long, max itemsize is {2}!'.format(entry, col_name, self._entry_class.columns[col_name].itemsize)
+            print 'WARNING: entry "{}" for column "{}" is too long, max itemsize is {}!'.format(entry, col_name, self._entry_class.columns[col_name].itemsize)
 
     def _filter(self, source):
         if self._entry_filter is not None:

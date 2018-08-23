@@ -31,7 +31,7 @@ class Entry:
             try:
                 value = self._entry_modifier[key](value)
             except:
-                print 'Could not properly apply modifier for key "{0}" and value "{1}"'.format(key, value)
+                print 'Could not properly apply modifier for key "{}" and value "{}"'.format(key, value)
                 raise
         ## Cache value
         self._cache[key] = value

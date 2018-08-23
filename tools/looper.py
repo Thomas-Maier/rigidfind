@@ -7,46 +7,63 @@ from sys import stdout
 from helper import Format
 
 class Looper:
-    def __init__(self, file_names, reader, output_name = None, input_format = Format.h5, node_path = None):
+    def __init__(self, file_names, reader, output_name = None, node_path = None):
         self._file_names = file_names
-        self._input_format = input_format
         ## This one defines how the input files are to be read
         self._reader = reader
         if output_name: self._reader.set_output_name(output_name)
-        self._node_path = node_path
-        if self._input_format == Format.h5 and self._node_path is None:
-            print 'Input format is h5, but no node path is provided'
-            raise Exception
         self._bar_mode = True
         try:
             from tqdm import tqdm
         except ImportError:
             self._bar_mode = False
+        self._node_path = node_path
+        if self._node_path is not None:
+            try:
+                import tables
+            except ImportError:
+                print 'Node path defined but no tables module found'
+                raise
 
     def _initialise(self):
         return 0
 
     def _execute(self, file_name):
-        if self._input_format == Format.h5:
-            import tables
-            data_file = tables.open_file(file_name, 'r')
-            data = data_file.get_node(self._node_path)
-            self._reader.get_data(data, self._input_format)
-            data_file.close()
+        ## Input taken as h5 file if node_path is defined
+        if self._node_path is not None:
+            self._load_tables(file_name)
         else:
-            open_func = open
-            if self._input_format == Format.gzipjson or self._input_format == Format.gzippkl:
-                import gzip
-                open_func = gzip.open
-            mode = 'r'
-            loader = json
-            if self._input_format == Format.pkl or self._input_format == Format.gzippkl:
-                import pickle
-                mode = 'rb'
-                loader = pickle
-            with open_func(file_name, mode) as in_file:
-                data = loader.load(in_file)
-            self._reader.get_data(data, self._input_format)
+            self._load_dump(file_name)
+
+    def _load_tables(self, file_name):
+        import tables
+        data_file = tables.open_file(file_name, 'r')
+        data = data_file.get_node(self._node_path)
+        self._reader.get_data(data, Format.h5)
+        data_file.close()
+
+    def _get_data(self, file_obj):
+        try:
+            import json
+            data = json.load(file_obj)
+            input_format = Format.json
+        except ValueError:
+            import pickle
+            data = pickle.load(file_obj)
+            input_format = Format.pkl
+
+        return data, input_format
+
+    def _load_dump(self, file_name):
+        import gzip
+        file_obj = gzip.open(file_name, 'rb')
+        try:
+            data, input_format = self._get_data(file_obj)
+        except IOError:
+            file_obj = open(file_name, 'rb')
+            data, input_format = self._get_data(file_obj)
+        self._reader.get_data(data, input_format)
+        file_obj.close()
 
     def _finalise(self):
         self._reader.write_output()
