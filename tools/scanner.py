@@ -48,7 +48,8 @@ class Scanner:
     def _scan_h5(self):
         filters = tables.Filters(complevel = 1, complib = 'lzo')
         if self._bar_mode:
-            iter_tuple = enumerate(self._indices, bar_format = '{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'))
+            from tqdm import tqdm
+            iter_tuple = enumerate(tqdm(self._indices, bar_format = '{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'))
         else:
             iter_tuple = enumerate(self._indices)
         for i, index in iter_tuple:
@@ -79,7 +80,8 @@ class Scanner:
 
     def _scan_json(self):
         if self._bar_mode:
-            iter_tuple = enumerate(self._indices, bar_format = '{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'))
+            from tqdm import tqdm
+            iter_tuple = enumerate(tqdm(self._indices, bar_format = '{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'))
         else:
             iter_tuple = enumerate(self._indices)
         for i, index in iter_tuple:
