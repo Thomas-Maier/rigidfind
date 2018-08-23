@@ -37,3 +37,23 @@ def create_table(h5file, node_path, description):
         group = h5file.create_group(group, group_name)
 
     return h5file.create_table(group, node_path[-1], description)
+
+from .reader import Reader, Mode
+from .looper import Looper
+
+def get_looper(input_files, template, output_name, entry_modifier = {}, entry_filter = None, entry_mapper = {},
+               use_set = False, input_format = Format.h5, node_path = '/table', mode = Mode.aggregation):
+    reader = Reader(Template = template,
+                    OutputName = output_name,
+                    Modifier = entry_modifier,
+                    Filter = entry_filter,
+                    Mapper = entry_mapper,
+                    UseSet = use_set,
+                    Mode = mode)
+
+    looper = Looper(FileNames = input_files,
+                    InputFormat = input_format,
+                    NodePath = node_path,
+                    Reader = reader)
+
+    return looper
