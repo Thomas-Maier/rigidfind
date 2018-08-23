@@ -32,6 +32,11 @@ class Scanner:
                 raise SystemExit
             self._table_path = self._parse_table_path(TablePath)
             self._columns_to_check = set([l for l in EntryClass.columns.keys() if EntryClass.columns[l].kind == 'string'])
+        self._bar_mode = True
+        try:
+            from tqdm import tqdm
+        except ImportError:
+            self._bar_mode = False
 
     def scan(self):
         self._debug('Start scanning indices: {0}'.format(self._indices))
@@ -42,9 +47,14 @@ class Scanner:
 
     def _scan_h5(self):
         filters = tables.Filters(complevel = 1, complib = 'lzo')
-        for i, index in enumerate(self._indices):
-            stdout.write('\r({0}/{1}) processing {2}'.format(i+1, len(self._indices), index))
-            stdout.flush()
+        if self._bar_mode:
+            iter_tuple = enumerate(self._indices, bar_format = '{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'))
+        else:
+            iter_tuple = enumerate(self._indices)
+        for i, index in iter_tuple:
+            if not self._bar_mode:
+                stdout.write('\r({0}/{1}) processing {2}'.format(i+1, len(self._indices), index))
+                stdout.flush()
             h5file = tables.open_file('{0}/{1}.h5'.format(self._output_folder, index), mode = 'w', title = '{0}'.format(index), filters = filters)
             table = self._create_table(h5file)
             row = table.row
@@ -64,12 +74,18 @@ class Scanner:
                 row.append()
             table.flush()
             h5file.close()
-        stdout.write('\n')
+        if not self._bar_mode:
+            stdout.write('\n')
 
     def _scan_json(self):
-        for i, index in enumerate(self._indices):
-            stdout.write('\r({0}/{1}) processing {2}'.format(i+1, len(self._indices), index))
-            stdout.flush()
+        if self._bar_mode:
+            iter_tuple = enumerate(self._indices, bar_format = '{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'))
+        else:
+            iter_tuple = enumerate(self._indices)
+        for i, index in iter_tuple:
+            if not self._bar_mode:
+                stdout.write('\r({0}/{1}) processing {2}'.format(i+1, len(self._indices), index))
+                stdout.flush()
             output = []
             ## Scan ES index with python helpers module
             result = helpers.scan(self._instance, query = self._query, index = index, size = 10000)
@@ -85,7 +101,8 @@ class Scanner:
             out_file = gzip.open('{0}/{1}.json.gz'.format(self._output_folder, index), 'w')
             json.dump(output, out_file)
             out_file.close()
-        stdout.write('\n')
+        if not self._bar_mode:
+            stdout.write('\n')
 
     def get_indices(self, index, index_filter = None):
         indices = self._instance.cat.indices(index = index, h = 'index', request_timeout = 600).split('\n')
