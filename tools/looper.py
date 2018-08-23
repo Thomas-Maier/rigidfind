@@ -17,6 +17,11 @@ class Looper:
         if self._input_format == Format.h5 and self._node_path is None:
             print 'Input format is h5, but no node path is provided'
             raise Exception
+        self._bar_mode = True
+        try:
+            from tqdm import tqdm
+        except ImportError:
+            self._bar_mode = False
 
     def _initialise(self):
         return 0
@@ -48,12 +53,18 @@ class Looper:
 
     def just_do_it(self):
         self._initialise()
-        n_files = len(self._file_names)
-        for i, file_name in enumerate(self._file_names):
-            ## Extra whitespaces to avoid overflow
-            print_string = 'Processing {0} ({1}/{2})                '.format(file_name.rsplit('/', 1)[-1], i+1, n_files)
-            stdout.write('\r'+print_string)
-            stdout.flush()
+        if self._bar_mode:
+            from tqdm import tqdm
+            iter_tuple = enumerate(tqdm(self._file_names, bar_format = '{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'))
+        else:
+            iter_tuple = enumerate(self._file_names)
+        for i, file_name in iter_tuple:
+            if not self._bar_mode:
+                ## Extra whitespaces to avoid overflow
+                print_string = 'Processing {0} ({1}/{2})                '.format(file_name.rsplit('/', 1)[-1], i+1, len(self._file_names))
+                stdout.write('\r'+print_string)
+                stdout.flush()
             self._execute(file_name)
-        stdout.write('\n')
+        if not self._bar_mode:
+            stdout.write('\n')
         self._finalise()
