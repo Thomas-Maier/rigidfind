@@ -8,13 +8,14 @@ from helper import Format, create_table
 class Mode(Enum):
     aggregation = 0
     skimming = 1
-
+        
 
 class Entry:
-    def __init__(self, entry_modifier = {}, entry_mapper = {}):
+    def __init__(self, entry_modifier = {}, entry_mapper = {}, entry_constructer = {}):
         self.entry = None
         self._entry_modifier = entry_modifier
         self._entry_mapper = entry_mapper
+        self._entry_constructer = entry_constructer
         self._cache = {}
 
     def __getitem__(self, key):
@@ -25,7 +26,11 @@ class Entry:
         key_mapped = key
         if key in self._entry_mapper:
             key_mapped = self._entry_mapper[key]
-        value = self.entry[key_mapped]
+        ## If constructer was defined for the key, construct the value instead of directly retrieving it
+        if key in self._entry_constructer:
+            value = self._entry_constructer[key](self.entry)
+        else:
+            value = self.entry[key_mapped]
         ## Modify value if a modifier for this key was set
         if key in self._entry_modifier:
             try:
@@ -52,7 +57,7 @@ class Entry:
 
 
 class Reader:
-    def __init__(self, template, output_name = None, entry_modifier = {}, entry_filter = None, entry_mapper = {}, use_set = False, mode = Mode.aggregation):
+    def __init__(self, template, output_name = None, entry_modifier = {}, entry_filter = None, entry_mapper = {}, entry_constructer = {}, use_set = False, mode = Mode.aggregation):
         self._mode = mode
         self._template = template
         self._payload = {}
@@ -62,6 +67,7 @@ class Reader:
         self._entry_modifier = entry_modifier
         self._entry_filter = entry_filter
         self._entry_mapper = entry_mapper
+        self._entry_constructer = entry_constructer
         self._output_name = output_name
         self._output_format = Format.pkl
         self._use_set = use_set
@@ -113,7 +119,7 @@ class Reader:
         else:
             iter_obj = data
         ## Make entry object
-        entry = Entry(entry_modifier = self._entry_modifier, entry_mapper = self._entry_mapper)
+        entry = Entry(entry_modifier = self._entry_modifier, entry_mapper = self._entry_mapper, entry_constructer = self._entry_constructer)
         for input_entry in iter_obj:
             ## Load current entry data
             entry.load(input_entry)
@@ -179,13 +185,13 @@ class Reader:
 
 
 class Filter:
-    def __init__(self, Whitelists = {}, Blacklists = {}, Filters = {}):
+    def __init__(self, whitelists = {}, blacklists = {}, filters = {}):
         self.whitelists = OrderedDict()
-        self.whitelists.update(Whitelists)
+        self.whitelists.update(whitelists)
         self.blacklists = OrderedDict()
-        self.blacklists.update(Blacklists)
+        self.blacklists.update(blacklists)
         self.filters = []
-        for func, fields in Filters:
+        for func, fields in filters:
             ## Check if fields is already a list or tuple
             if not isinstance(fields, list) and not isinstance(fields, tuple):
                 fields = [fields]

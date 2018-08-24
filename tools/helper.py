@@ -22,13 +22,14 @@ def create_table(h5file, node_path, description):
 from .reader import Reader, Mode
 from .looper import Looper
 
-def get_looper(input_files, template, output_name, entry_modifier = {}, entry_filter = None, entry_mapper = {},
+def get_looper(input_files, template, output_name, entry_modifier = {}, entry_filter = None, entry_mapper = {}, entry_constructer = {},
                use_set = False, node_path = None, mode = Mode.aggregation):
     reader = Reader(template = template,
                     output_name = output_name,
                     entry_modifier = entry_modifier,
                     entry_filter = entry_filter,
                     entry_mapper = entry_mapper,
+                    entry_constructer = entry_constructer,
                     use_set = use_set,
                     mode = mode)
 

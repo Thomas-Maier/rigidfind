@@ -2,10 +2,11 @@
 ## Should also allow for 'scripts' entry instead of 'field'
 
 class Aggregation(object):
-    def __init__(self):
+    def __init__(self, field):
         self.name = ''
         self.subs = []
         self.payload = {}
+        self._field = field
 
     def get(self):
         # query = {'aggs': self.payload}
@@ -35,38 +36,40 @@ class Aggregation(object):
 
 class TermAggregation(Aggregation):
     def __init__(self, field, size, order = 'desc'):
-        super(TermAggregation, self).__init__()
-        self._field = field
-        self.name = field
+        super(TermAggregation, self).__init__(field)
+        self.name = field.name
         self._size = size
         self._order = order
         self.payload = self._get_term_aggregation()
 
     def _get_term_aggregation(self):
-        return {
+        agg_dict = {
             'terms': {
-                'field': self._field,
                 'size': self._size,
                 'order': {
                     '_term': self._order
                 }
             }
         }
+        agg_dict['terms'].update(self._field.get())
+
+        return agg_dict
 
     
 class PercentileAggregation(Aggregation):
     def __init__(self, field, percentiles = [50]):
-        super(PercentileAggregation, self).__init__()
-        self._field = field
-        self.name = field
+        super(PercentileAggregation, self).__init__(field)
+        self.name = field.name
         self._percentiles = percentiles
         self.payload = self._get_percentile_aggregation()
 
     def _get_percentile_aggregation(self):
-        return {
+        agg_dict = {
             'percentiles': {
-                'field': self._field,
                 'percents': self._percentiles,
                 'keyed': False
             }
         }
+        agg_dict['percentiles'].update(self._field.get())
+
+        return agg_dict
