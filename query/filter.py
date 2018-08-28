@@ -58,7 +58,7 @@ class RangeFilter(Filter):
     def _get_match_range(self):
         return {
             'range': {
-                'modificationtime': {
+                self.field: {
                     'gte': self._gte,
                     'lte': self._lte,
                     'format': self._format
