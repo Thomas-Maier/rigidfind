@@ -1,6 +1,6 @@
 
 class Field(object):
-    def __init__(self, field = ''):
+    def __init__(self, field):
         super(Field, self).__init__()
         self._payload = {'field': field}
         self.name = field
@@ -57,11 +57,10 @@ class Script(object):
 
 
 class ScriptField(Field, Script):
-    def __init__(self, script_string = '', lang = 'expression', name = ''):
-        super(ScriptField, self).__init__()
+    def __init__(self, field, script_string = '', lang = 'expression', name = ''):
+        super(ScriptField, self).__init__(field)
         self._script_string = script_string
         self._lang = lang
-        self.name = name
 
     def _get_script_field(self):
         return {
