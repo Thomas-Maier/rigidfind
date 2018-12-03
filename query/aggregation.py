@@ -13,7 +13,7 @@ class Aggregation(object):
         # Aggregation._get(self.subs, query['aggs'])
         query = {}
         Aggregation._get(self, query)
-        
+
         return query
 
     def add(self, agg):
@@ -55,7 +55,7 @@ class TermAggregation(Aggregation):
 
         return agg_dict
 
-    
+
 class PercentileAggregation(Aggregation):
     def __init__(self, field, percentiles = [50]):
         super(PercentileAggregation, self).__init__(field)
