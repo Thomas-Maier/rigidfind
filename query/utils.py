@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 
-def convert_to_unix_time(date_string, date_format = '%Y-%m-%dT%H:%M:%S'):
+def date_to_unix(date_string, date_format = '%Y-%m-%dT%H:%M:%S'):
   import datetime, calendar
   ## Make datetime object from time_string
   date = datetime.datetime.strptime(date_string, date_format)
@@ -11,6 +11,11 @@ def convert_to_unix_time(date_string, date_format = '%Y-%m-%dT%H:%M:%S'):
   time_unix = calendar.timegm(time_tuple)
 
   return time_unix
+
+def unix_to_date(timestamp, date_format = '%Y-%m-%dT%H:%M:%S'):
+  import datetime
+
+  return datetime.datetime.utcfromtimestamp(timestamp).strftime(date_format)
 
 def get_date_params(shift = None, date1 = None, date2 = None, date_format = '%Y-%m-%d'):
   import datetime
@@ -26,3 +31,18 @@ def get_date_params(shift = None, date1 = None, date2 = None, date_format = '%Y-
   else:
     print('Please specify either a shift or start and end date')
     raise Exception
+
+def hr_time(time_seconds):
+  minutes, seconds = divmod(time_seconds, 60)
+  hours, minutes = divmod(minutes, 60)
+  ## Weird case in which hours get a minus prepended
+  if hours == 0 and minutes == 0:
+    hours = abs(hours)
+  if hours < 25:
+    return '{:.0f}:{:02.0f}:{:02.0f}'.format(hours, minutes, seconds)
+  days, hours = divmod(hours, 24)
+  if days < 366:
+    return '{:.0f}d {:.0f}:{:02.0f}:{:02.0f}'.format(days, hours, minutes, seconds)
+  years, days = divmod(days, 365)
+
+  return '{:.0f}y {:.0f}d {:.0f}:{:02.0f}:{:02.0f}'.format(years, days, hours, minutes, seconds)

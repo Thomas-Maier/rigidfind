@@ -50,9 +50,9 @@ class QueryFilter(Filter):
 class RangeFilter(Filter):
     def __init__(self, field, gte, lte, format = 'epoch_second', date_format = '%Y-%m-%dT%H:%M:%S'):
         self._field = field
-        from .utils import convert_to_unix_time
-        self._gte = gte if not isinstance(gte, str) else convert_to_unix_time(gte, date_format = date_format)
-        self._lte = lte if not isinstance(lte, str) else convert_to_unix_time(lte, date_format = date_format)
+        from .utils import date_to_unix
+        self._gte = gte if not isinstance(gte, str) else date_to_unix(gte, date_format = date_format)
+        self._lte = lte if not isinstance(lte, str) else date_to_unix(lte, date_format = date_format)
         self._format = format
 
     def _get_match_range(self):
